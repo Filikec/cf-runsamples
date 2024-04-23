@@ -70,10 +70,11 @@ if response.status_code == 200:
     
     for i in range(len(outputs)):
         b = outputs[i] != outputs_my[i]
-        if (b): samples_accepted = False
-        if (b): printIncorrect(f'Test case: {i+1}')
+        if (b): 
+            samples_accepted = False
+            printIncorrect(f'Test case: {i+1}')
         else: printCorrect(f'Test case: {i+1}')
-        print("Output:")
+        print("Example output:")
         print(outputs[i])
         print("Actual output")
         print(outputs_my[i])
