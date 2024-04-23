@@ -5,11 +5,10 @@ import subprocess
 import threading
 import os
 
-PROMENNA = "g++ -Wall -Wextra -g3 -std=c++20"
 CPP = True
 
 def compileProgram(problemId):
-    subprocess.run(PROMENNA + f" {problemId}.cpp -o {problemId}.exe")
+    subprocess.run(f"g++ -Wall -Wextra -g3 -std=c++20 {problemId}.cpp -o {problemId}.exe")
 
 def printCorrect(text):
     print(f'\033[92m{text}\033[0m')   
@@ -82,6 +81,5 @@ if response.status_code == 200:
 
     if (samples_accepted): printCorrect("CORRECT")
     else: printIncorrect("INCORRECT")
-
 else:
     print('Failed to retrieve the webpage')
