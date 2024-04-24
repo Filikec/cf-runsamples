@@ -19,22 +19,22 @@ def printIncorrect(text):
 ## parse arguments
 parser = argparse.ArgumentParser(description='Run samples for a contest. Runs .cpp by default, searches for .py if cpp not present.')
 parser.add_argument('contestId', type=int, help='id of the contest')
-parser.add_argument('problemId', type=str, help='id of contest (a,b,c...)')
-parser.add_argument('-py', action='store_true', help='force python solution')
+parser.add_argument('problemId', type=str, help='id of the problem (a,b,c...)')
+parser.add_argument('-py', action='store_true', help='force use python solution')
 
 args = parser.parse_args()
 problemId = args.problemId.lower()
 contestId = args.contestId
 py = args.py
 
-if (py): CPP = False
+## set correct solution file
+if (os.path.exists(f"{problemId}.cpp") and not py): CPP = True
+elif (os.path.exists(f"{problemId}.py")): CPP = False
 else:
-    if (os.path.exists(f"{problemId}.cpp")): CPP = True
-    elif (os.path.exists(f"{problemId}.py")): CPP = False
-    else:
-        printIncorrect("No solution file")
-        exit(0)
+    printIncorrect("No solution file")
+    exit(0)
 
+## if cpp start compilation before request
 if (CPP):
     thread = threading.Thread(target=compileProgram, args=(problemId,))
     thread.start()
@@ -50,17 +50,21 @@ if response.status_code == 200:
     outputs = []
     outputs_my = []
 
+    ## parse input
     for s in soup.find_all(class_="input"):
         sample_input = ""
         for t in s.find_all("div"):
             if (t["class"].count("test-example-line")): sample_input += t.text.strip() + '\n'
-        inputs.append(sample_input)
+        inputs.append(sample_input[:-1])
 
+    ## parse output
     for s in soup.find_all(class_="output"):
         outputs.append(s.find("pre").text.strip())
 
+    ## if cpp make sure compilation finishes
     if (CPP): thread.join()
 
+    ## run solution
     for i in inputs:
         command_string = f"{problemId}.exe"
         if (not CPP): command_string = f"python {problemId}.py"
@@ -68,18 +72,21 @@ if response.status_code == 200:
         proc = subprocess.run(command_string, input=i, text=True, capture_output=True, check=True)
         outputs_my.append(proc.stdout.strip())
     
+    ## test correctness
     for i in range(len(outputs)):
         b = outputs[i] != outputs_my[i]
         if (b): 
             samples_accepted = False
             printIncorrect(f'Test case: {i+1}')
         else: printCorrect(f'Test case: {i+1}')
+        print("Input:")
+        print(inputs[i])
         print("Example output:")
         print(outputs[i])
         print("Actual output")
         print(outputs_my[i])
         print("シシシシシシシシシシシシシシシシシシ")
-
+    
     if (samples_accepted): printCorrect("CORRECT")
     else: printIncorrect("INCORRECT")
 else:
