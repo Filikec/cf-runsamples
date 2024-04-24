@@ -4,6 +4,7 @@ import argparse
 import subprocess
 import threading
 import os
+import sys
 
 CPP = True
 
@@ -32,7 +33,7 @@ if (os.path.exists(f"{problemId}.cpp") and not py): CPP = True
 elif (os.path.exists(f"{problemId}.py")): CPP = False
 else:
     printIncorrect("No solution file")
-    exit(0)
+    sys.exit(0)
 
 ## if cpp start compilation before request
 if (CPP):
@@ -58,7 +59,6 @@ if response.status_code == 200:
             if (t["class"].count("test-example-line")):
                 sample_input += t.text.strip() + '\n'
                 got = True
-
         if (got): inputs.append(sample_input[:-1])
         else: inputs.append(s.find("pre").text.strip())
     
