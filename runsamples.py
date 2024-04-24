@@ -53,10 +53,15 @@ if response.status_code == 200:
     ## parse input
     for s in soup.find_all(class_="input"):
         sample_input = ""
+        got = False
         for t in s.find_all("div"):
-            if (t["class"].count("test-example-line")): sample_input += t.text.strip() + '\n'
-        inputs.append(sample_input[:-1])
+            if (t["class"].count("test-example-line")):
+                sample_input += t.text.strip() + '\n'
+                got = True
 
+        if (got): inputs.append(sample_input[:-1])
+        else: inputs.append(s.find("pre").text.strip())
+    
     ## parse output
     for s in soup.find_all(class_="output"):
         outputs.append(s.find("pre").text.strip())
