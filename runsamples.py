@@ -54,11 +54,12 @@ if response.status_code == 200:
     ## parse input
     for s in soup.find_all(class_="input"):
         sample_input = ""
-        got = False
+        got = False # at least on input parsed
         for t in s.find_all("div"):
             if (t["class"].count("test-example-line")):
                 sample_input += t.text.strip() + '\n'
                 got = True
+        # if no input parsed, html is slightly different
         if (got): inputs.append(sample_input[:-1])
         else: inputs.append(s.find("pre").text.strip())
     
@@ -79,8 +80,7 @@ if response.status_code == 200:
     
     ## test correctness
     for i in range(len(outputs)):
-        b = outputs[i] != outputs_my[i]
-        if (b): 
+        if (outputs[i] != outputs_my[i]): 
             samples_accepted = False
             printIncorrect(f'Test case: {i+1}')
         else: printCorrect(f'Test case: {i+1}')
@@ -91,7 +91,7 @@ if response.status_code == 200:
         print("Actual output")
         print(outputs_my[i])
         print("シシシシシシシシシシシシシシシシシシ")
-    
+    ## verdict 
     if (samples_accepted): printCorrect("CORRECT")
     else: printIncorrect("INCORRECT")
 else:
