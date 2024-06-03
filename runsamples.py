@@ -6,8 +6,11 @@ import threading
 import os
 import sys
 import json
+import shutil
+
 
 CPP = True
+TEMPLATE_PATH = "D:/Program_projects/CompetitiveProgramming/Implementations/cfTemplate.cpp"
 
 def compileProgram(problemId):
     subprocess.run(f"g++ -Wall -Wextra -g3 -std=c++20 {problemId}.cpp -o {problemId}.exe")
@@ -77,7 +80,7 @@ def parseProblems(contestId):
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, 'html.parser')
         for s in soup.find_all(class_="problemindexholder"):
-            tests.append((parseInputs(s),parseOutputs(s),s["problemindex"]))
+            tests.append((parseInputs(s),parseOutputs(s),s["problemindex"].lower()))
         printCorrect("Parsed problems")
     else:
         printIncorrect('Failed to retrieve the webpage')
@@ -91,15 +94,18 @@ def saveTests(tests):
             "outputs": test[1]
         }
 
-        file_name = f'{test[2]}.json'.lower()
+        file_name = f'{test[2]}.json'
 
         with open(os.path.join("samples",file_name), 'w') as json_file:
             json.dump(data, json_file, indent=4)
 
+def createFiles(tests):
+    for test in tests:
+        shutil.copy(TEMPLATE_PATH,f'{test[2]}.cpp')
+
 def getParsedProblem(problemId):
     with open(os.path.join("samples",f'{problemId}.json'), 'r') as json_file:
         data = json.load(json_file)
-    
     return data
 
 def run():
@@ -132,7 +138,9 @@ def run():
 def parse():
     args = parser.parse_args()
     contestId = args.contestId
-    saveTests(parseProblems(contestId))
+    parsed = parseProblems(contestId)
+    saveTests(parsed)
+    if (args.create): createFiles(parsed)
 
 
 parser = argparse.ArgumentParser(description='Run samples for a contest. Runs .cpp by default, searches for .py if cpp not present.')
@@ -140,6 +148,7 @@ subparsers = parser.add_subparsers()
 
 parser_parseProblems = subparsers.add_parser('parse', help='Parse all problems for the contest')
 parser_parseProblems.add_argument('contestId', type=int, help='id of the contest')
+parser_parseProblems.add_argument('-create', action="store_true", help='Create .cpp file for each problem')
 parser_parseProblems.set_defaults(func=parse)
 
 parser_test = subparsers.add_parser('run', help='Test solution on samples. The executable must have the same name as the sample file.')
